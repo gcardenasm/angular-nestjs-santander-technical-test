@@ -1,0 +1,44 @@
+# Global ignores for the entire monorepo (backend and frontend)
+
+# Node dependencies
+**/node_modules/
+
+# Compiled output
+**/dist/
+**/build/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Angular cache and coverage
+frontend/.angular/cache/
+**/coverage/
+
+# Jest coverage and test outputs
+**/coverage/
+**/tmp/
+
+# TypeScript build info
+**/.tsbuildinfo
+
+# Generated files
+*.out
+*.map
+**/dist/
+**/out-tsc/

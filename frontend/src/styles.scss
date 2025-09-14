@@ -1,0 +1,12 @@
+@use '@angular/material' as mat;
+@include mat.core();
+
+$app-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+  ),
+));
+
+:root {
+  @include mat.all-component-themes($app-theme);
+}

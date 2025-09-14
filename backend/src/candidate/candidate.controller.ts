@@ -1,0 +1,43 @@
+import { Controller, Post, UploadedFile, UseInterceptors, Body, Get } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CandidateService } from './candidate.service';
+import { CandidateDto } from './dto/candidate.dto';
+
+@Controller('candidates')
+export class CandidateController {
+  constructor(private readonly candidateService: CandidateService) { }
+
+  /**
+   * Returns the list of persisted candidates.
+   * Used by the frontend to hydrate the UI on refresh.
+   * @returns Array of candidates in reverse chronological order.
+   */
+  @Get()
+  findAll() {
+    return this.candidateService.findAll();
+  }
+
+
+  /**
+   * Accepts a `multipart/form-data` request containing candidate metadata and an Excel file.
+   * @param file - Uploaded Excel file (field name: `file`).
+   * @param body - Request body with `name` and `surname`.
+   * @returns Saved candidate entity.
+   * @throws BadRequestException When the file is missing or the Excel is invalid.
+   *
+   * @example
+   *  Using curl:
+   *  curl -X POST http://localhost:3000/candidates \
+   *    -F "name=Ada" \
+   *    -F "surname=Lovelace" \
+   *    -F "file=@./cand.xlsx"
+   */
+  @Post()
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadCandidate(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: CandidateDto,
+  ) {
+    return this.candidateService.processCandidate(body, file);
+  }
+}
