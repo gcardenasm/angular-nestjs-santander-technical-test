@@ -3,41 +3,39 @@ import { of } from 'rxjs';
 import { CandidateFormComponent } from './candidate-form.component';
 import { CandidateService } from '../services/candidate.service';
 import { CandidateStore } from '../services/candidate.store';
-import { Candidate } from '../models/candidate';
 
 describe('CandidateFormComponent', () => {
   let component: CandidateFormComponent;
-
-  const serviceMock = {
-    uploadCandidate: jasmine.createSpy().and.returnValue(of({})),
-  };
+  let serviceMock: { uploadCandidate: jasmine.Spy };
 
   beforeEach(async () => {
+    // 👇 nuevo spy por test (o podrías resetear en afterEach)
+    serviceMock = {
+      uploadCandidate: jasmine.createSpy('uploadCandidate').and.returnValue(of({}))
+    };
+
     await TestBed.configureTestingModule({
-      imports: [CandidateFormComponent], // standalone
+      imports: [CandidateFormComponent],
       providers: [
         CandidateStore,
-        { provide: CandidateService, useValue: serviceMock },
+        { provide: CandidateService, useValue: serviceMock }
       ],
     }).compileComponents();
 
-    const fixture = TestBed.createComponent(CandidateFormComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    component = TestBed.createComponent(CandidateFormComponent).componentInstance;
   });
 
-  function mockFile(name = 'cand.xlsx'): File {
-    return new File(['dummy'], name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  function mockFile(name = 'cand.xlsx') {
+    return new File(['dummy'], name, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
   }
 
   it('envía el formulario y llama al servicio con FormData', () => {
     const file = mockFile();
     component.form.patchValue({ name: 'Ada', surname: 'Lovelace', file });
 
-    const returned: Candidate = {
-      id: 1, name: 'Ada', surname: 'Lovelace',
-      seniority: 'junior', years: 2, availability: true, createdAt: new Date()
-    } as any;
+    const returned: any = { id: 1, name: 'Ada' };
     serviceMock.uploadCandidate.and.returnValue(of(returned));
 
     component.submit();
@@ -51,7 +49,9 @@ describe('CandidateFormComponent', () => {
 
   it('no envía si el formulario es inválido', () => {
     component.form.reset();
+
     component.submit();
+
     expect(serviceMock.uploadCandidate).not.toHaveBeenCalled();
   });
 });

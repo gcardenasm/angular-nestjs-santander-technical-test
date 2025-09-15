@@ -10,6 +10,7 @@ async function bootstrap() {
   app.use(json({ limit: '10mb' }));
   // Enable CORS so that the Angular dev server can call the backend
   app.enableCors();
+  app.setGlobalPrefix('api');
   await app.listen(3000);
 }
 

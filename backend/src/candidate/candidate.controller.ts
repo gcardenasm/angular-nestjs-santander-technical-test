@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseInterceptors, Body, Get } from '@nestjs/common';
+import { Controller, Post, UploadedFile, UseInterceptors, Body, Get, Delete, HttpCode, Param, HttpStatus, ParseIntPipe } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidateService } from './candidate.service';
 import { CandidateDto } from './dto/candidate.dto';
@@ -39,5 +39,34 @@ export class CandidateController {
     @Body() body: CandidateDto,
   ) {
     return this.candidateService.processCandidate(body, file);
+  }
+
+    /**
+   * DELETE /candidates/:id
+   *
+   * Deletes a single candidate by id.
+   *
+   * @param id - Candidate identifier (path param).
+   * @returns No content on success.
+   * @throws NotFoundException When the candidate does not exist.
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async removeOne(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    await this.candidateService.remove(id);
+  }
+
+  /**
+   * DELETE /candidates
+   *
+   * Deletes all candidates.
+   * Useful for quickly resetting the dataset during demos/tests.
+   *
+   * @returns An object with the number of deleted rows.
+   */
+  @Delete()
+  async removeAll(): Promise<{ deleted: number }> {
+    const deleted = await this.candidateService.removeAll();
+    return { deleted };
   }
 }

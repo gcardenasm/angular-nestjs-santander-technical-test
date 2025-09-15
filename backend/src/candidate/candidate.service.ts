@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import * as XLSX from 'xlsx';
 import { CandidateDto } from './dto/candidate.dto';
 import { CandidateEntity } from './entities/candidate.entity';
@@ -10,7 +10,7 @@ export class CandidateService {
   constructor(
     @InjectRepository(CandidateEntity)
     private readonly repo: Repository<CandidateEntity>,
-  ) {}
+  ) { }
 
   /**
    * Fetches all persisted candidates ordered by most recent first.
@@ -56,8 +56,8 @@ export class CandidateService {
     // 1) Primary attempt: read as objects using first row as header
     type Row = Record<string, unknown>;
     const rowsObj: Row[] = XLSX.utils.sheet_to_json<Row>(worksheet, {
-      header: 0,      
-      defval: null,   
+      header: 0,
+      defval: null,
       blankrows: false,
       raw: true,
     });
@@ -136,6 +136,29 @@ export class CandidateService {
   }
 
   /**
+   * Deletes a single candidate by id.
+   *
+   * @param id - Candidate identifier.
+   * @throws NotFoundException When the candidate does not exist.
+   */
+  async remove(id: number): Promise<void> {
+    const res = await this.repo.delete(id);
+    if (!res.affected) {
+      throw new NotFoundException(`Candidate ${id} not found`);
+    }
+  }
+
+  /**
+   * Deletes all candidates.
+   *
+   * @returns The number of deleted rows.
+   */
+  async removeAll(): Promise<number> {
+    const res = await this.repo.createQueryBuilder().delete().from(CandidateEntity).execute();
+    return res.affected ?? 0;
+  }
+
+  /**
    * Maps various column label variants (EN/ES, with/without spaces, camel/snake)
    * to canonical keys: `{ seniority, years, availability }`.
    *
@@ -208,7 +231,7 @@ export class CandidateService {
     const str = String(value ?? '').trim().toLowerCase();
     if (['true', 'yes', '1', 'si', 'sí', 'y', 'on'].includes(str)) return true;
     if (['false', 'no', '0', 'n', 'off'].includes(str)) return false;
-    if (str === '') return false; 
+    if (str === '') return false;
 
     throw new BadRequestException(
       `Availability must be boolean-like (true/false, yes/no, 1/0). Received: "${value}"`,
